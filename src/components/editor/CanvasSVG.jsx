@@ -14,12 +14,23 @@ export default function CanvasSVG({
   onPointerCoords,
   glassSize = 'small',
   wireframeMode = false,
+  // Multi-select and marquee props
+  selectionMode = 'single',
+  selectedLayerIds,
+  setSelectedLayerIds,
+  // Dimension lines props
+  dimensionLines = [],
+  setDimensionLines,
+  dimensionColor = '#EF4444',
 }) {
   const svgRef = useRef(null);
   const drawingRef = useRef(null);
   const polygonRef = useRef(null);
   const dragRef = useRef(null);
   const handleRef = useRef(null);
+  const [marqueeRect, setMarqueeRect] = useState(null);
+  const marqueeRef = useRef(null);
+  const [draggingDimensionId, setDraggingDimensionId] = useState(null);
 
   const HANDLE_KEYS = ['nw','n','ne','e','se','s','sw','w'];
 
@@ -78,10 +89,35 @@ export default function CanvasSVG({
         if (hitTest(o, x, y)) { hit = o; break; }
       }
       if (hit) {
-        setSelectedId(hit.id);
+        // Shift+click for multi-select
+        if (e.shiftKey && setSelectedLayerIds) {
+          setSelectedLayerIds(prev => {
+            const next = new Set(prev);
+            if (next.has(hit.id)) {
+              next.delete(hit.id);
+            } else {
+              next.add(hit.id);
+            }
+            return next;
+          });
+        } else {
+          setSelectedId(hit.id);
+          if (setSelectedLayerIds) {
+            setSelectedLayerIds(new Set());
+          }
+        }
         dragRef.current = { startX: x, startY: y, origObj: hit };
       } else {
-        setSelectedId(null);
+        // Start marquee selection if in marquee mode or holding shift
+        if (selectionMode === 'marquee' || e.shiftKey) {
+          marqueeRef.current = { startX: x, startY: y };
+          setMarqueeRect({ x, y, w: 0, h: 0 });
+        } else {
+          setSelectedId(null);
+          if (setSelectedLayerIds) {
+            setSelectedLayerIds(new Set());
+          }
+        }
       }
       return;
     }
@@ -164,10 +200,21 @@ export default function CanvasSVG({
     }
   }
 
-  function onPointerMove(e) {
+function onPointerMove(e) {
     const [x, y] = getCoords(e);
     onPointerCoords?.(x, y);
 
+    // Handle marquee selection drawing
+    if (marqueeRef.current) {
+      const { startX, startY } = marqueeRef.current;
+      const nx = Math.min(startX, x);
+      const ny = Math.min(startY, y);
+      const nw = Math.abs(x - startX);
+      const nh = Math.abs(y - startY);
+      setMarqueeRect({ x: nx, y: ny, w: nw, h: nh });
+      return;
+    }
+    
     if (handleRef.current) {
       const { handle, oldBox, origObj } = handleRef.current;
       const newBox = computeResizedBox(oldBox, handle, x, y);
@@ -231,6 +278,35 @@ export default function CanvasSVG({
   }
 
   function onPointerUp() {
+    // Complete marquee selection
+    if (marqueeRef.current && marqueeRect && setSelectedLayerIds) {
+      const { x, y, w, h } = marqueeRect;
+      const selectedIds = new Set();
+      
+      for (const o of objects) {
+        if (o.visible === false || o.locked) continue;
+        const bbox = getBBox(o);
+        // Check if object intersects with marquee rectangle
+        const intersects = !(
+          bbox.x + bbox.w < x ||
+          bbox.x > x + w ||
+          bbox.y + bbox.h < y ||
+          bbox.y > y + h
+        );
+        if (intersects) {
+          selectedIds.add(o.id);
+        }
+      }
+      
+      if (selectedIds.size > 0) {
+        setSelectedLayerIds(selectedIds);
+      }
+      
+      marqueeRef.current = null;
+      setMarqueeRect(null);
+      return;
+    }
+    
     if (drawingRef.current) {
       setSelectedId(drawingRef.current.id);
       drawingRef.current = null;
@@ -386,9 +462,37 @@ export default function CanvasSVG({
               <rect x="-20" y="-8" width="40" height="16" fill="#EF4444" rx="2" />
               <text x="0" y="4" textAnchor="middle" fill="white" fontSize="9" fontFamily="monospace">LOCKED</text>
             </g>
-          )}
-        </g>
+)}
+      </g>
       )}
+      
+      {/* Marquee selection rectangle */}
+      {marqueeRect && (
+        <rect
+          x={marqueeRect.x}
+          y={marqueeRect.y}
+          width={marqueeRect.w}
+          height={marqueeRect.h}
+          fill="rgba(59, 130, 246, 0.1)"
+          stroke="#3B82F6"
+          strokeWidth="1"
+          strokeDasharray="4 4"
+          pointerEvents="none"
+        />
+      )}
+      
+      {/* Dimension lines */}
+      {dimensionLines.map((dim) => (
+        <DimensionLine
+          key={dim.id}
+          dimension={dim}
+          onUpdate={(updates) => {
+            setDimensionLines?.(prev => prev.map(d => d.id === dim.id ? { ...d, ...updates } : d));
+          }}
+          color={dim.color || dimensionColor}
+          pxPerMm={pxPerMm}
+        />
+      ))}
       </svg>
     </div>
   );

@@ -22,6 +22,9 @@ import { ScaleControl } from '@/components/editor/ScaleControl';
 import { AdvancedToolbar } from '@/components/editor/AdvancedToolbar';
 import { scaleObjectFromCenter, mirrorObjectGeometry } from '@/lib/editor/transforms';
 import { parsePath, serializePath, splitPathIntoSubpaths, verifyPathClosed, getPathCenter, generateInsetPath, generateInsetRect } from '@/lib/editor/path-operations';
+import { useTranslation } from '@/lib/i18n';
+import { LanguageSelector } from '@/components/editor/LanguageSelector';
+import { Ruler } from 'lucide-react';
 
 const EllipseIcon = (props) => (
   <svg
@@ -89,7 +92,15 @@ export default function Editor() {
   const [outlineStatus, setOutlineStatus] = useState(null);
   const [draggedLayerId, setDraggedLayerId] = useState(null);
   const [dragOverLayerId, setDragOverLayerId] = useState(null);
+  const [colorMode, setColorMode] = useState('fill'); // 'fill' or 'stroke'
+  const [selectionMode, setSelectionMode] = useState('single'); // 'single' or 'marquee'
+  const [dimensionLines, setDimensionLines] = useState([]);
+  const [dimensionColor, setDimensionColor] = useState('#EF4444');
+  const [marqueeStart, setMarqueeStart] = useState(null);
+  const [marqueeEnd, setMarqueeEnd] = useState(null);
   const objectsRef = useRef(objects);
+  
+  const { t } = useTranslation();
   
   useEffect(() => {
     objectsRef.current = objects;
@@ -181,6 +192,41 @@ export default function Editor() {
       if (e.key === 'Escape') {
         setSelectedId(null);
         setSelectedLayerIds(new Set());
+      }
+      
+      // Text formatting shortcuts (Ctrl+B, Ctrl+I, Ctrl+U)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        if (selected?.type === 'text') {
+          const isBold = selected.fontWeight === 'bold';
+          updateSelected({ fontWeight: isBold ? 'normal' : 'bold' });
+        }
+        return;
+      }
+      
+      if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+        e.preventDefault();
+        if (selected?.type === 'text') {
+          const isItalic = selected.fontStyle === 'italic';
+          updateSelected({ fontStyle: isItalic ? 'normal' : 'italic' });
+        }
+        return;
+      }
+      
+      if ((e.metaKey || e.ctrlKey) && e.key === 'u') {
+        e.preventDefault();
+        if (selected?.type === 'text') {
+          const isUnderline = selected.textDecoration === 'underline';
+          updateSelected({ textDecoration: isUnderline ? 'none' : 'underline' });
+        }
+        return;
+      }
+      
+      // Select all with Ctrl+A
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        e.preventDefault();
+        selectAllLayers();
+        return;
       }
     };
     window.addEventListener('keydown', onKey);
@@ -762,7 +808,148 @@ export default function Editor() {
     pushHistory();
     setObjects(prev => prev.map(o => ({ ...o, sizeLocked: false })));
     setSizesLocked(false);
-    toast.success('All sizes unlocked');
+    toast.success(t('allSizesUnlockedMsg'));
+  }
+
+  // Scale selected objects by percentage
+  function scaleSelectedByPercent(scalePercent) {
+    const ids = getTargetIds();
+    if (ids.length === 0) return;
+    
+    pushHistory();
+    const objsToScale = objects.filter(o => ids.includes(o.id));
+    
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const o of objsToScale) {
+      const bbox = getBBox(o);
+      minX = Math.min(minX, bbox.x);
+      minY = Math.min(minY, bbox.y);
+      maxX = Math.max(maxX, bbox.x + bbox.w);
+      maxY = Math.max(maxY, bbox.y + bbox.h);
+    }
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    setObjects(prev => prev.map(o => {
+      if (!ids.includes(o.id)) return o;
+      return scaleObjectFromCenter(o, scalePercent, centerX, centerY);
+    }));
+  }
+
+  // Apply color to symbol (fill or stroke only)
+  function applyColorToSymbol(mode) {
+    const ids = getTargetIds();
+    if (ids.length === 0) return;
+    
+    pushHistory();
+    const currentColor = selected?.fill || fill;
+    
+    setObjects(prev => prev.map(o => {
+      if (!ids.includes(o.id)) return o;
+      if (mode === 'full') {
+        return { ...o, fill: currentColor, stroke: currentColor };
+      } else if (mode === 'border') {
+        return { ...o, fill: 'none', stroke: currentColor };
+      }
+      return o;
+    }));
+  }
+
+  // Add dimension line
+  function addDimensionLine() {
+    const newDimension = {
+      id: newId(),
+      type: 'dimension',
+      x1: CANVAS_W / 4,
+      y1: CANVAS_H / 2,
+      x2: (CANVAS_W / 4) * 3,
+      y2: CANVAS_H / 2,
+      angle: 0,
+      color: dimensionColor,
+      visible: true,
+    };
+    setDimensionLines(prev => [...prev, newDimension]);
+    toast.success(t('addDimension'));
+  }
+
+  // Update dimension line
+  function updateDimensionLine(updates) {
+    if (dimensionLines.length === 0) return;
+    const lastId = dimensionLines[dimensionLines.length - 1]?.id;
+    setDimensionLines(prev => prev.map(d => 
+      d.id === lastId ? { ...d, ...updates } : d
+    ));
+  }
+
+  // Delete dimension line
+  function deleteDimensionLine(id) {
+    setDimensionLines(prev => prev.filter(d => d.id !== id));
+  }
+
+  // Export SVG centered for Ezcad
+  function exportEzcadSVG() {
+    const drawableObjs = objects.filter((o) => o.visible !== false && o.type !== 'image');
+    if (drawableObjs.length === 0) {
+      toast.error(t('canvasEmpty'));
+      return;
+    }
+    
+    // Calculate bounding box of all objects
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const o of drawableObjs) {
+      const bbox = getBBox(o);
+      minX = Math.min(minX, bbox.x);
+      minY = Math.min(minY, bbox.y);
+      maxX = Math.max(maxX, bbox.x + bbox.w);
+      maxY = Math.max(maxY, bbox.y + bbox.h);
+    }
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    // Translate objects so center is at origin
+    const centeredObjs = drawableObjs.map(o => translateObject(o, -centerX, -centerY));
+    
+    // Build SVG with viewBox centered at origin
+    const viewBox = `${-width/2} ${-height/2} ${width} ${height}`;
+    const svgContent = centeredObjs.map(o => shapeToSvgElement(o)).join('\n');
+    
+    const svgString = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${width}" height="${height}">
+  <!-- Ezcad centered export - origin at center -->
+  ${svgContent}
+</svg>`;
+    
+    downloadText(svgString, `${slug(name)}__ezcad_centered.svg`, 'image/svg+xml');
+    toast.success(t('ezcadExported'));
+  }
+
+  // Helper function for SVG element generation (simplified)
+  function shapeToSvgElement(o) {
+    const style = `fill="${o.fill || 'none'}" stroke="${o.stroke || 'none'}" stroke-width="${o.strokeWidth || 1}" opacity="${o.opacity ?? 1}"`;
+    
+    switch (o.type) {
+      case 'rect':
+        return `<rect x="${o.x}" y="${o.y}" width="${o.width}" height="${o.height}" ${style} />`;
+      case 'ellipse':
+        return `<ellipse cx="${o.cx}" cy="${o.cy}" rx="${o.rx}" ry="${o.ry}" ${style} />`;
+      case 'circle':
+        return `<circle cx="${o.cx}" cy="${o.cy}" r="${o.r}" ${style} />`;
+      case 'line':
+        return `<line x1="${o.x1}" y1="${o.y1}" x2="${o.x2}" y2="${o.y2}" ${style} />`;
+      case 'polygon':
+      case 'path':
+        const pts = (o.points || []).map(p => p.join(',')).join(' ');
+        return `<polygon points="${pts}" ${style} />`;
+      case 'svgpath':
+        return `<path d="${o.d}" ${style} />`;
+      case 'text':
+        return `<text x="${o.x}" y="${o.y}" font-size="${o.fontSize || 24}" font-family="${o.fontFamily || 'Arial'}" ${style}>${o.text || ''}</text>`;
+      default:
+        return '';
+    }
   }
 
   function onUploadImage(e) {
@@ -945,21 +1132,26 @@ export default function Editor() {
           className="bg-transparent border border-zinc-800 px-3 py-2 text-sm text-zinc-300 focus:border-amber-500 focus:outline-none flex-1 min-w-[200px]"
           placeholder="Description (optional)"
         />
-        <ToolbarButton onClick={undo} testId="editor-undo" label="Undo" icon={RotateCcw} />
-        <ToolbarButton onClick={redo} testId="editor-redo" label="Redo" />
-        <ToolbarButton onClick={clearAll} testId="editor-clear" label="Clear" icon={Trash2} danger />
+        <ToolbarButton onClick={undo} testId="editor-undo" label={t('undo')} icon={RotateCcw} />
+        <ToolbarButton onClick={redo} testId="editor-redo" label={t('redo')} />
+        <ToolbarButton onClick={clearAll} testId="editor-clear" label={t('clear')} icon={Trash2} danger />
+        <LanguageSelector />
         <div className="ml-auto flex gap-2">
           <button onClick={saveDesign} disabled={saving} data-testid="editor-save"
             className="px-4 py-2 border border-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-black text-amber-500 transition-colors text-xs font-mono uppercase tracking-widest disabled:opacity-50">
-            <Save className="w-4 h-4 inline -mt-1 mr-1" /> {saving ? 'Saving...' : 'Save'}
+            <Save className="w-4 h-4 inline -mt-1 mr-1" /> {saving ? t('saving') : t('save')}
           </button>
           <button onClick={exportPDF} data-testid="editor-export-pdf"
             className="px-4 py-2 bg-amber-500 text-black hover:bg-amber-400 text-xs font-mono uppercase tracking-widest">
-            <FileImage className="w-4 h-4 inline -mt-1 mr-1" /> PDF
+            <FileImage className="w-4 h-4 inline -mt-1 mr-1" /> {t('pdf')}
           </button>
           <button onClick={exportSVG} data-testid="editor-export-svg"
             className="px-4 py-2 bg-white text-black hover:bg-zinc-200 text-xs font-mono uppercase tracking-widest">
-            <Download className="w-4 h-4 inline -mt-1 mr-1" /> SVG by color
+            <Download className="w-4 h-4 inline -mt-1 mr-1" /> {t('svgByColor')}
+          </button>
+          <button onClick={exportEzcadSVG} data-testid="editor-export-ezcad"
+            className="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 text-xs font-mono uppercase tracking-widest">
+            <Ruler className="w-4 h-4 inline -mt-1 mr-1" /> {t('exportEzcad')}
           </button>
         </div>
       </div>
@@ -976,6 +1168,7 @@ export default function Editor() {
         onFlipVertical={() => flipObjects('vertical')}
         onRotateCW={(deg) => rotateObjects(deg)}
         onRotateCCW={(deg) => rotateObjects(deg)}
+        onRotateByAngle={(deg) => rotateObjects(deg)}
         onCenterOnCanvas={centerOnCanvas}
         onBringForward={bringForward}
         onSendBackward={sendBackward}
@@ -1004,6 +1197,21 @@ export default function Editor() {
         sizesLocked={sizesLocked}
         onLockAllSizes={lockAllSizes}
         onUnlockAllSizes={unlockAllSizes}
+        // New props for scale, coloring, dimensions, and selection
+        onApplyScale={scaleSelectedByPercent}
+        colorMode={colorMode}
+        setColorMode={setColorMode}
+        onApplyColorToSymbol={applyColorToSymbol}
+        dimensionLines={dimensionLines}
+        onAddDimensionLine={addDimensionLine}
+        onUpdateDimensionLine={updateDimensionLine}
+        onDeleteDimensionLine={deleteDimensionLine}
+        dimensionColor={dimensionColor}
+        setDimensionColor={setDimensionColor}
+        selectionMode={selectionMode}
+        setSelectionMode={setSelectionMode}
+        onSelectAll={selectAllLayers}
+        onDeselectAll={deselectAllLayers}
       />
 
       <div className="flex flex-1 min-h-0">
