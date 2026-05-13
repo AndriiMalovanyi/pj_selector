@@ -6,7 +6,7 @@ import {
   MousePointer2, Pencil, Square, Circle, Minus, Hexagon, Type,
   Image as ImageIcon, Trash2, Save, Download, FileImage,
   RotateCcw, Eye, EyeOff, Lock, Unlock, ArrowUp, ArrowDown,
-  Wand2, Octagon, Triangle, RectangleHorizontal
+  Wand2, Octagon, Triangle, RectangleHorizontal, GripVertical
 } from 'lucide-react';
 import { designsApi } from '@/lib/api';
 import {
@@ -87,6 +87,8 @@ export default function Editor() {
   const [wireframeMode, setWireframeMode] = useState(false);
   const [sizesLocked, setSizesLocked] = useState(false);
   const [outlineStatus, setOutlineStatus] = useState(null);
+  const [draggedLayerId, setDraggedLayerId] = useState(null);
+  const [dragOverLayerId, setDragOverLayerId] = useState(null);
   const objectsRef = useRef(objects);
   
   useEffect(() => {
@@ -504,6 +506,72 @@ export default function Editor() {
         selectedLayerIds.has(o.id) ? { ...o, locked: !o.locked } : o
       )
     );
+  }
+
+  // Drag and drop layer reordering
+  function handleLayerDragStart(e, layerId) {
+    setDraggedLayerId(layerId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', layerId);
+    // Add visual feedback
+    e.currentTarget.style.opacity = '0.5';
+  }
+
+  function handleLayerDragEnd(e) {
+    e.currentTarget.style.opacity = '1';
+    setDraggedLayerId(null);
+    setDragOverLayerId(null);
+  }
+
+  function handleLayerDragOver(e, layerId) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (layerId !== draggedLayerId) {
+      setDragOverLayerId(layerId);
+    }
+  }
+
+  function handleLayerDragLeave(e) {
+    // Only clear if we're actually leaving the element
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragOverLayerId(null);
+    }
+  }
+
+  function handleLayerDrop(e, targetLayerId) {
+    e.preventDefault();
+    
+    if (!draggedLayerId || draggedLayerId === targetLayerId) {
+      setDraggedLayerId(null);
+      setDragOverLayerId(null);
+      return;
+    }
+
+    pushHistory();
+    
+    setObjects((prev) => {
+      const newObjects = [...prev];
+      const draggedIndex = newObjects.findIndex(o => o.id === draggedLayerId);
+      const targetIndex = newObjects.findIndex(o => o.id === targetLayerId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+      // Remove the dragged item
+      const [draggedItem] = newObjects.splice(draggedIndex, 1);
+      
+      // Calculate new target index after removal
+      const newTargetIndex = newObjects.findIndex(o => o.id === targetLayerId);
+      
+      // Insert at the correct position
+      // Since we display reversed, we need to insert after the target
+      newObjects.splice(newTargetIndex, 0, draggedItem);
+      
+      return newObjects;
+    });
+
+    setDraggedLayerId(null);
+    setDragOverLayerId(null);
+    toast.success('Layer order changed');
   }
 
   function scaleToTargetMm(targetMm) {
@@ -1083,10 +1151,34 @@ export default function Editor() {
                     const sizePx = Math.max(bbox.w, bbox.h);
                     const sizeMm = sizePx / PX_PER_MM;
                     const isLargest = largestLayerInfo && largestLayerInfo.id === o.id;
+                    const isDragging = draggedLayerId === o.id;
+                    const isDragOver = dragOverLayerId === o.id && draggedLayerId !== o.id;
 
                     return (
-                      <li key={o.id} data-testid={`layer-${o.id}`}
-                        className={`flex items-center gap-1.5 border ${selectedLayerIds.has(o.id) ? 'border-blue-500 bg-blue-500/10' : o.id === selectedId ? 'border-amber-500' : 'border-zinc-800'} px-2 py-1`}>
+                      <li 
+                        key={o.id} 
+                        data-testid={`layer-${o.id}`}
+                        draggable
+                        onDragStart={(e) => handleLayerDragStart(e, o.id)}
+                        onDragEnd={handleLayerDragEnd}
+                        onDragOver={(e) => handleLayerDragOver(e, o.id)}
+                        onDragLeave={handleLayerDragLeave}
+                        onDrop={(e) => handleLayerDrop(e, o.id)}
+                        className={`flex items-center gap-1.5 border transition-all duration-150 ${
+                          isDragOver 
+                            ? 'border-amber-500 border-2 bg-amber-500/20' 
+                            : isDragging
+                              ? 'border-zinc-600 opacity-50'
+                              : selectedLayerIds.has(o.id) 
+                                ? 'border-blue-500 bg-blue-500/10' 
+                                : o.id === selectedId 
+                                  ? 'border-amber-500' 
+                                  : 'border-zinc-800'
+                        } px-2 py-1 cursor-grab active:cursor-grabbing`}
+                      >
+                        <div className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing">
+                          <GripVertical className="w-3.5 h-3.5" />
+                        </div>
                         <input type="checkbox" checked={selectedLayerIds.has(o.id)} onChange={() => toggleLayerSelection(o.id)}
                           className="w-3 h-3 accent-blue-500 cursor-pointer" data-testid={`layer-checkbox-${o.id}`} />
                         <button onClick={() => setObjects((prev) => prev.map((x) => x.id === o.id ? { ...x, visible: !(x.visible !== false) } : x))}
