@@ -1,0 +1,414 @@
+// Multi-language translations for the Editor
+// Supported languages: Czech (cs), English (en)
+
+export const translations = {
+  cs: {
+    // Header
+    designName: 'Název designu',
+    description: 'Popis (volitelný)',
+    undo: 'Zpět',
+    redo: 'Opakovat',
+    clear: 'Vymazat',
+    save: 'Uložit',
+    saving: 'Ukládám...',
+    pdf: 'PDF',
+    svgByColor: 'SVG podle barvy',
+    exportEzcad: 'Export pro Ezcad',
+
+    // Tools
+    select: 'Výběr',
+    brush: 'Štětec',
+    rectangle: 'Obdélník',
+    square: 'Čtverec',
+    ellipse: 'Elipsa',
+    circle: 'Kruh',
+    line: 'Čára',
+    polygon: 'Mnohoúhelník',
+    triangle: 'Trojúhelník',
+    octagon: 'Osmiúhelník',
+    text: 'Text',
+    uploadImage: 'Nahrát obrázek',
+    traceBitmap: 'Trasovat bitmapu',
+    dimensionLine: 'Kótovací čára',
+
+    // Toolbar tabs
+    transform: 'Transformace',
+    arrange: 'Uspořádat',
+    edit: 'Upravit',
+    view: 'Zobrazení',
+    textTab: 'Text',
+    vectors: 'Vektory',
+    outlines: 'Obrysy',
+    coloring: 'Barvení',
+    dimensions: 'Kóty',
+
+    // Transform
+    align: 'Zarovnat',
+    alignLeft: 'Zarovnat vlevo',
+    alignCenter: 'Zarovnat na střed (H)',
+    alignRight: 'Zarovnat vpravo',
+    alignTop: 'Zarovnat nahoru',
+    alignCenterV: 'Zarovnat na střed (V)',
+    alignBottom: 'Zarovnat dolů',
+    flip: 'Převrátit',
+    flipHorizontal: 'Převrátit horizontálně',
+    flipVertical: 'Převrátit vertikálně',
+    rotate: 'Otočit',
+    rotateCW: 'Otočit +90°',
+    rotateCCW: 'Otočit -90°',
+    rotation: 'Rotace',
+    angle: 'Úhel',
+    degrees: 'stupňů',
+    position: 'Pozice',
+    centerOnCanvas: 'Vycentrovat na plátno',
+    scale: 'Měřítko',
+    scalePercent: 'Měřítko %',
+
+    // Arrange
+    order: 'Pořadí',
+    bringForward: 'Posunout dopředu',
+    sendBackward: 'Posunout dozadu',
+    visibility: 'Viditelnost',
+    toggleVisibility: 'Přepnout viditelnost',
+    toggleLock: 'Přepnout zámek',
+
+    // Edit
+    clipboard: 'Schránka',
+    copy: 'Kopírovat',
+    paste: 'Vložit',
+    delete: 'Smazat',
+
+    // View
+    grid: 'Mřížka',
+    toggleGrid: 'Přepnout mřížku',
+    snapToGrid: 'Přichytit k mřížce',
+    gridSize: 'Velikost mřížky',
+    zoom: 'Přiblížení',
+    zoomIn: 'Přiblížit',
+    zoomOut: 'Oddálit',
+    resetZoom: 'Resetovat přiblížení',
+    wireframe: 'Drátový model',
+    toggleWireframe: 'Přepnout drátový model',
+
+    // Text
+    format: 'Formát',
+    bold: 'Tučné',
+    italic: 'Kurzíva',
+    underline: 'Podtržení',
+    size: 'Velikost',
+    fontFamily: 'Rodina písma',
+    selectTextObject: 'Vyberte textový objekt k úpravě',
+
+    // Vectors
+    split: 'Rozdělit',
+    splitVector: 'Rozdělit vektor na subpaths',
+    sizeLock: 'Zámek velikosti',
+    lockAllSizes: 'Zamknout všechny velikosti',
+    unlockAllSizes: 'Odemknout všechny velikosti',
+    allSizesLocked: 'Všechny velikosti jsou zamčeny',
+    selectVectorToSplit: 'Vyberte vektorovou cestu k rozdělení',
+
+    // Outlines
+    verify: 'Ověřit',
+    verifyOutlines: 'Ověřit obrysy',
+    center: 'Střed',
+    generateCenterOutline: 'Generovat středový obrys',
+    status: 'Stav',
+    closed: 'Uzavřeno',
+    open: 'Otevřeno',
+    selectOutlineToVerify: 'Vyberte obrys k ověření',
+
+    // Coloring
+    colorMode: 'Režim barvení',
+    fillAndStroke: 'Výplň a obrys',
+    strokeOnly: 'Pouze obrys',
+    fillColor: 'Barva výplně',
+    strokeColor: 'Barva obrysu',
+    applyToSymbol: 'Aplikovat na symbol',
+    colorEntireSymbol: 'Obarvit celý symbol',
+    colorBorderOnly: 'Obarvit pouze okraj',
+
+    // Dimensions (Kóty)
+    dimensionLines: 'Kótovací čáry',
+    addDimension: 'Přidat kótu',
+    dimensionAngle: 'Úhel kóty',
+    dimensionColor: 'Barva kóty',
+    dragToRotate: 'Táhněte pro otočení',
+    enterAngle: 'Zadejte úhel',
+
+    // Panels
+    toolDefaults: 'Výchozí nastavení',
+    fill: 'Výplň',
+    stroke: 'Obrys',
+    strokeWidth: 'Šířka obrysu',
+    opacity: 'Průhlednost',
+    palette: 'Paleta',
+    selected: 'Vybrané',
+    layers: 'Vrstvy',
+    noLayersYet: 'Zatím žádné vrstvy',
+    all: 'Vše',
+    none: 'Žádné',
+
+    // Glass size
+    glassSize: 'Velikost skla',
+
+    // Scale control
+    scaleControl: 'Ovládání měřítka',
+    targetSize: 'Cílová velikost',
+    applyScale: 'Aplikovat měřítko',
+    currentScale: 'Aktuální měřítko',
+
+    // Selection
+    multiSelect: 'Vícenásobný výběr',
+    marqueeSelect: 'Výběr obdélníkem',
+    shiftClickSelect: 'Shift+klik pro přidání do výběru',
+    selectAll: 'Vybrat vše',
+    deselectAll: 'Zrušit výběr',
+
+    // Messages
+    clearCanvasConfirm: 'Vymazat celé plátno?',
+    deleteLayersConfirm: 'Smazat {count} vybraných vrstev?',
+    designUpdated: 'Design aktualizován',
+    designSaved: 'Design uložen',
+    saveFailed: 'Ukládání selhalo',
+    pdfExported: 'PDF exportován',
+    pdfRenderFailed: 'Vykreslení PDF selhalo',
+    canvasEmpty: 'Plátno je prázdné',
+    exported: 'Exportováno {count} souborů barev + kombinovaný',
+    copied: 'Zkopírováno {count} objektů',
+    pasted: 'Vloženo {count} objektů',
+    centered: 'Vycentrováno {count} vrstev',
+    selectLayerToCenter: 'Vyberte vrstvu k vycentrování',
+    splitInto: 'Rozděleno na {count} subpaths',
+    pathHasOneSubpath: 'Tato cesta má pouze jednu subpath',
+    selectSvgPathToSplit: 'Vyberte SVG cestu k rozdělení',
+    outlineClosed: 'Obrys je uzavřený a platný',
+    outlineOpen: 'Obrys je otevřený (neuzavřený Z příkazem)',
+    noValidPath: 'Nebyla nalezena platná cesta',
+    selectObjectToVerify: 'Vyberte objekt k ověření',
+    centerOutlineGenerated: 'Středový obrys vygenerován',
+    selectObjectForCenterOutline: 'Vyberte objekt pro generování středového obrysu',
+    centerOutlineNotSupported: 'Středový obrys není podporován pro tento typ tvaru',
+    allSizesLockedMsg: 'Všechny velikosti zamčeny',
+    allSizesUnlockedMsg: 'Všechny velikosti odemčeny',
+    layerOrderChanged: 'Pořadí vrstev změněno',
+    importedShapes: 'Importováno {count} tvarů z SVG',
+    traceFailed: 'Trasování selhalo',
+    tracedColors: 'Trasováno do {count} vrstev barev',
+    loadDesignFailed: 'Nepodařilo se načíst design',
+    ezcadExported: 'Exportováno pro Ezcad (vystředěno)',
+
+    // Language
+    language: 'Jazyk',
+    czech: 'Čeština',
+    english: 'English',
+  },
+
+  en: {
+    // Header
+    designName: 'Design name',
+    description: 'Description (optional)',
+    undo: 'Undo',
+    redo: 'Redo',
+    clear: 'Clear',
+    save: 'Save',
+    saving: 'Saving...',
+    pdf: 'PDF',
+    svgByColor: 'SVG by color',
+    exportEzcad: 'Export for Ezcad',
+
+    // Tools
+    select: 'Select',
+    brush: 'Brush',
+    rectangle: 'Rectangle',
+    square: 'Square',
+    ellipse: 'Ellipse',
+    circle: 'Circle',
+    line: 'Line',
+    polygon: 'Polygon',
+    triangle: 'Triangle',
+    octagon: 'Octagon',
+    text: 'Text',
+    uploadImage: 'Upload image',
+    traceBitmap: 'Trace bitmap',
+    dimensionLine: 'Dimension line',
+
+    // Toolbar tabs
+    transform: 'Transform',
+    arrange: 'Arrange',
+    edit: 'Edit',
+    view: 'View',
+    textTab: 'Text',
+    vectors: 'Vectors',
+    outlines: 'Outlines',
+    coloring: 'Coloring',
+    dimensions: 'Dimensions',
+
+    // Transform
+    align: 'Align',
+    alignLeft: 'Align Left',
+    alignCenter: 'Align Center (H)',
+    alignRight: 'Align Right',
+    alignTop: 'Align Top',
+    alignCenterV: 'Align Center (V)',
+    alignBottom: 'Align Bottom',
+    flip: 'Flip',
+    flipHorizontal: 'Flip Horizontal',
+    flipVertical: 'Flip Vertical',
+    rotate: 'Rotate',
+    rotateCW: 'Rotate +90°',
+    rotateCCW: 'Rotate -90°',
+    rotation: 'Rotation',
+    angle: 'Angle',
+    degrees: 'degrees',
+    position: 'Position',
+    centerOnCanvas: 'Center on Canvas',
+    scale: 'Scale',
+    scalePercent: 'Scale %',
+
+    // Arrange
+    order: 'Order',
+    bringForward: 'Bring Forward',
+    sendBackward: 'Send Backward',
+    visibility: 'Visibility',
+    toggleVisibility: 'Toggle Visibility',
+    toggleLock: 'Toggle Lock',
+
+    // Edit
+    clipboard: 'Clipboard',
+    copy: 'Copy',
+    paste: 'Paste',
+    delete: 'Delete',
+
+    // View
+    grid: 'Grid',
+    toggleGrid: 'Toggle Grid',
+    snapToGrid: 'Snap to Grid',
+    gridSize: 'Grid Size',
+    zoom: 'Zoom',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Reset Zoom',
+    wireframe: 'Wireframe',
+    toggleWireframe: 'Toggle Wireframe Mode',
+
+    // Text
+    format: 'Format',
+    bold: 'Bold',
+    italic: 'Italic',
+    underline: 'Underline',
+    size: 'Size',
+    fontFamily: 'Font Family',
+    selectTextObject: 'Select a text object to edit',
+
+    // Vectors
+    split: 'Split',
+    splitVector: 'Split Vector into Subpaths',
+    sizeLock: 'Size Lock',
+    lockAllSizes: 'Lock All Sizes',
+    unlockAllSizes: 'Unlock All Sizes',
+    allSizesLocked: 'All sizes are locked',
+    selectVectorToSplit: 'Select a vector path to split',
+
+    // Outlines
+    verify: 'Verify',
+    verifyOutlines: 'Verify Outlines',
+    center: 'Center',
+    generateCenterOutline: 'Generate Center Outline',
+    status: 'Status',
+    closed: 'Closed',
+    open: 'Open',
+    selectOutlineToVerify: 'Select an outline to verify',
+
+    // Coloring
+    colorMode: 'Color Mode',
+    fillAndStroke: 'Fill & Stroke',
+    strokeOnly: 'Stroke Only',
+    fillColor: 'Fill Color',
+    strokeColor: 'Stroke Color',
+    applyToSymbol: 'Apply to Symbol',
+    colorEntireSymbol: 'Color entire symbol',
+    colorBorderOnly: 'Color border only',
+
+    // Dimensions (Kóty)
+    dimensionLines: 'Dimension Lines',
+    addDimension: 'Add Dimension',
+    dimensionAngle: 'Dimension Angle',
+    dimensionColor: 'Dimension Color',
+    dragToRotate: 'Drag to rotate',
+    enterAngle: 'Enter angle',
+
+    // Panels
+    toolDefaults: 'Tool defaults',
+    fill: 'Fill',
+    stroke: 'Stroke',
+    strokeWidth: 'Stroke W',
+    opacity: 'Opacity',
+    palette: 'Palette',
+    selected: 'Selected',
+    layers: 'Layers',
+    noLayersYet: 'No layers yet',
+    all: 'All',
+    none: 'None',
+
+    // Glass size
+    glassSize: 'Glass Size',
+
+    // Scale control
+    scaleControl: 'Scale Control',
+    targetSize: 'Target Size',
+    applyScale: 'Apply Scale',
+    currentScale: 'Current Scale',
+
+    // Selection
+    multiSelect: 'Multi-select',
+    marqueeSelect: 'Marquee select',
+    shiftClickSelect: 'Shift+click to add to selection',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+
+    // Messages
+    clearCanvasConfirm: 'Clear the entire canvas?',
+    deleteLayersConfirm: 'Delete {count} selected layer(s)?',
+    designUpdated: 'Design updated',
+    designSaved: 'Design saved',
+    saveFailed: 'Save failed',
+    pdfExported: 'PDF exported',
+    pdfRenderFailed: 'PDF render failed',
+    canvasEmpty: 'Canvas is empty',
+    exported: 'Exported {count} color file(s) + combined',
+    copied: 'Copied {count} object(s)',
+    pasted: 'Pasted {count} object(s)',
+    centered: 'Centered {count} layer(s)',
+    selectLayerToCenter: 'Select a layer to center',
+    splitInto: 'Split into {count} subpaths',
+    pathHasOneSubpath: 'This path has only one subpath',
+    selectSvgPathToSplit: 'Select an SVG path to split',
+    outlineClosed: 'Outline is closed and valid',
+    outlineOpen: 'Outline is open (not closed with Z command)',
+    noValidPath: 'No valid path found',
+    selectObjectToVerify: 'Select an object to verify',
+    centerOutlineGenerated: 'Center outline generated',
+    selectObjectForCenterOutline: 'Select an object to generate center outline',
+    centerOutlineNotSupported: 'Center outline not supported for this shape type',
+    allSizesLockedMsg: 'All sizes locked',
+    allSizesUnlockedMsg: 'All sizes unlocked',
+    layerOrderChanged: 'Layer order changed',
+    importedShapes: 'Imported {count} shape(s) from SVG',
+    traceFailed: 'Trace failed',
+    tracedColors: 'Traced into {count} color layer(s)',
+    loadDesignFailed: 'Failed to load design',
+    ezcadExported: 'Exported for Ezcad (centered)',
+
+    // Language
+    language: 'Language',
+    czech: 'Čeština',
+    english: 'English',
+  },
+};
+
+export const defaultLanguage = 'cs';
+export const supportedLanguages = [
+  { code: 'cs', name: 'Čeština', flag: '🇨🇿' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+];
